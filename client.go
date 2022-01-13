@@ -23,7 +23,6 @@ func (c *client) readInput() {
 		msg = strings.Trim(msg, "\r\n")
 		args := strings.Split(msg, " ") // args[0] is the command
 		cmd := strings.TrimSpace(args[0])
-
 		switch cmd {
 		case "/nick":
 			c.commands <- command{
@@ -52,6 +51,12 @@ func (c *client) readInput() {
 		case "/quit":
 			c.commands <- command{
 				cmd:    CMD_QUIT,
+				client: c,
+				args:   args,
+			}
+		case "?":
+			c.commands <- command{
+				cmd:    CMD_HELP,
 				client: c,
 				args:   args,
 			}

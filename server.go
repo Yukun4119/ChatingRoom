@@ -32,6 +32,8 @@ func (s *server) run() {
 			s.sendMsg(cmd.client, len(cmd.args), cmd.args)
 		case CMD_QUIT:
 			s.quit(cmd.client)
+		case CMD_HELP:
+			s.help(cmd.client)
 		}
 	}
 }
@@ -40,9 +42,10 @@ func (s *server) newClient(conn net.Conn) {
 	log.Printf("new Client : %s", conn.RemoteAddr().String())
 	c := &client{
 		conn:     conn,
-		nick:     "anonymous",
+		nick:     "Anonymous",
 		commands: s.commands,
 	}
+	c.msg2client(cheatSheet)
 	c.readInput()
 }
 
@@ -52,7 +55,7 @@ func (s *server) nick(c *client, argc int, args []string) {
 		return
 	}
 	c.nick = args[1]
-	c.msg2client(fmt.Sprintf("Welcome, %s", c.nick))
+	c.msg2client(fmt.Sprintf("Welcome! %s", c.nick))
 }
 
 func (s *server) listRooms(c *client) {
@@ -60,7 +63,8 @@ func (s *server) listRooms(c *client) {
 	for name := range s.rooms {
 		rooms = append(rooms, name)
 	}
-	c.msg2client(fmt.Sprintf("Rooms: %s", strings.Join(rooms, ", ")))
+	c.msg2client(fmt.Sprintf("Rooms available: %s", strings.Join(rooms, ", ")))
+	c.msg2client("You can also use /join to create a new room")
 }
 
 func (s *server) join(c *client, argc int, args []string) {
@@ -89,6 +93,10 @@ func (s *server) sendMsg(c *client, argc int, args []string) {
 		c.msg2client("Error! Usage: /msg <Message>")
 		return
 	}
+	if c.room == nil {
+		c.msg2client("You have not entered a room! PLS choose a room to start chatting!")
+		return
+	}
 	msg := strings.Join(args[1:], " ")
 	c.room.broadcast(c, c.nick+": "+msg)
 }
@@ -102,4 +110,8 @@ func (s *server) quit(c *client) {
 	}
 	c.msg2client("Bye~\n")
 	c.conn.Close()
+}
+
+func (s *server) help(c *client) {
+	c.msg2client(cheatSheet)
 }

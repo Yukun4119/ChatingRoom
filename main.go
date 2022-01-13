@@ -11,11 +11,11 @@ func main() {
 
 	listener, err := net.Listen("tcp", ":8888")
 	if err != nil {
-		log.Fatalf("OOOOOOOPS!")
+		log.Fatalf("Listen error!")
 	}
 	defer listener.Close()
 
-	log.Printf("Start!")
+	log.Printf("Server starts")
 
 	for {
 		conn, err := listener.Accept()
